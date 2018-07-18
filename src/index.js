@@ -9,6 +9,10 @@ import { xyzToBbox } from './toTile'
 
 const providers = [new LandsatPdsProvider()]
 
+app.get('/', function (req, res) {
+  res.send('hello world');
+})
+
 app.get('/tiles/:x/:y/:z', function(req, res){
   console.log("SDF")
   const sceneId = req.query.sceneId ? req.query.sceneId : null
