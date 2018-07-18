@@ -4,7 +4,7 @@
   "description": "A tile server based on geotiff.js and geoblaze",
   "main": "index.js",
   "scripts": {
-    "start": "node -r esm index.js",
+    "start": "node -r esm ./src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
