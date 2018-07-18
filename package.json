@@ -1,0 +1,21 @@
+{
+  "name": "geotiff-server",
+  "version": "0.0.1",
+  "description": "A tile server based on geotiff.js and geoblaze",
+  "main": "index.js",
+  "scripts": {
+    "start": "node -r esm index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.3",
+    "geotiff": "^1.0.0-beta.3",
+    "tilebelt": "^1.0.1"
+  },
+  "devDependencies": {
+    "babel-runtime": "^6.26.0",
+    "esm": "^3.0.71"
+  }
+}
