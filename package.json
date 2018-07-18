@@ -17,5 +17,8 @@
   "devDependencies": {
     "babel-runtime": "^6.26.0",
     "esm": "^3.0.71"
-  }
+  },
+  "engines": {
+    "node": "8.5.0"
+  },
 }

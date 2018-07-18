@@ -1,6 +1,6 @@
 var express = require('express');
 var GeoTIFF = require('geotiff');
-
+const PORT = process.env.PORT || 5000
 var app = express();
 
 import { LandsatPdsProvider } from './providers/LandsatPdsProvider'
@@ -47,7 +47,7 @@ app.get('/tiles/:x/:y/:z', function(req, res){
   res.send('hello world');
 });
 
-app.listen(3000);
+app.listen(PORT, () => console.log(`Listening on ${ PORT }`))
 
 
 function getProviderByName(providerSrc) {
