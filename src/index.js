@@ -47,12 +47,15 @@ app.get('/tiles/:x/:y/:z', async (req, res) => {
 
   const providerSrc = req.query.provider ? req.query.provider : 'landsat-pds'
   const provider = getProviderByName(providerSrc)
-  const sceneMeta = await provider.getMetadata(sceneId)
-  console.log(JSON.stringify(sceneMeta))
-  const sceneUtmZone = sceneMeta.PROJECTION_PARAMETERS.UTM_ZONE
 
   const bbox = xyzToBbox(req.params.x, req.params.y, req.params.z)
-  console.log(bbox)
+  // temporary windows fix
+  const bbox2 = xyzToBbox(req.params.x - 1, req.params.y, req.params.z)
+  bbox[2] = bbox2[2]
+
+  const sceneMeta = await provider.getMetadata(sceneId)
+  const sceneUtmZone = sceneMeta.L1_METADATA_FILE.PROJECTION_PARAMETERS.UTM_ZONE
+
   const bboxMinUtm = latLonToUtm([bbox[0], bbox[1]], sceneUtmZone)
   const bboxMaxUtm = latLonToUtm([bbox[2], bbox[3]], sceneUtmZone)
 
@@ -66,33 +69,32 @@ app.get('/tiles/:x/:y/:z', async (req, res) => {
   if (mode === 'rgb') {
     requiredBandsShortNames = req.query.rgbBands ? req.query.rgbBands.split(',') : provider.naturalColorBands
   }
-
-  // if (mode === 'calculate') {
-  //     const ratio = req.query.ratio ? req.query.ratio : '(b5-b4)/(b5+b4)'
-  //     requiredBandsShortNames = findUniqueBandShortNamesInString(ratio) //Only get the unique bands
-  // }
+  // // if (mode === 'calculate') {
+  // //     const ratio = req.query.ratio ? req.query.ratio : '(b5-b4)/(b5+b4)'
+  // //     requiredBandsShortNames = findUniqueBandShortNamesInString(ratio) //Only get the unique bands
+  // // }
 
   const imagesToQuery = provider.getBandUrls(sceneId, requiredBandsShortNames)
 
   console.log(imagesToQuery)
 
   for (var i = 0; i < imagesToQuery.length; i++) {
-    GeoTIFF.fromUrl(imagesToQuery[i])
-      .then(function (tiff) {
-        tiff.readRasters({
-          bbox: bboxUtm
-        })
-      })
-      .catch((err) => {
-        console.log(err)
-      })
+    const data = await getScene(imagesToQuery[i].url, bboxUtm)
+    console.log(JSON.stringify(data[0][0]))
   }
+
   res.send('hello world')
 })
 
 app.listen(port, () => {
   console.log(`Listening on ${port}`)
 })
+
+async function getScene (url, bbox) {
+  const tiff = await GeoTIFF.fromUrl(url)
+  const data = await tiff.readRasters({ bbox: bbox })
+  return data
+}
 
 function getProviderByName (providerSrc) {
   for (var i = 0; i < providers.length; i++) {

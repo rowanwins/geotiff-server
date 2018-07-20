@@ -37,7 +37,10 @@ export class LandsatPdsProvider {
   getBandUrls (sceneId, bands) {
     const urls = []
     for (var i = 0; i < bands.length; i++) {
-      urls.push(this.constructImageUrl(sceneId, bands[i]))
+      urls.push({
+        band: bands[i],
+        url: this.constructImageUrl(sceneId, bands[i])
+      })
     }
     return urls
   }

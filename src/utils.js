@@ -20,23 +20,23 @@ export function latLonToUtm (coords, zone) {
   const falseEasting = 500e3
   const falseNorthing = 10000e3
 
-  var λ0 = ((zone - 1) * 6 - 180 + 3).toRadians() // longitude of central meridian
+  var λ0 = degreesToRadians(((zone - 1) * 6 - 180 + 3)) // longitude of central meridian
 
   // grid zones are 8° tall; 0°N is offset 10 into latitude bands array
   var mgrsLatBands = 'CDEFGHJKLMNPQRSTUVWXX' // X is repeated for 80-84°N
   var latBand = mgrsLatBands.charAt(Math.floor(lat / 8 + 10))
   // adjust zone & central meridian for Norway
-  if (zone === 31 && latBand === 'V' && lon >= 3) { zone++; λ0 += (6).toRadians() }
+  if (zone === 31 && latBand === 'V' && lon >= 3) { zone++; degreesToRadians(λ0 += (6)) }
   // adjust zone & central meridian for Svalbard
-  if (zone === 32 && latBand === 'X' && lon < 9) { zone--; λ0 -= (6).toRadians() }
-  if (zone === 32 && latBand === 'X' && lon >= 9) { zone++; λ0 += (6).toRadians() }
-  if (zone === 34 && latBand === 'X' && lon < 21) { zone--; λ0 -= (6).toRadians() }
-  if (zone === 34 && latBand === 'X' && lon >= 21) { zone++; λ0 += (6).toRadians() }
-  if (zone === 36 && latBand === 'X' && lon < 33) { zone--; λ0 -= (6).toRadians() }
-  if (zone === 36 && latBand === 'X' && lon >= 33) { zone++; λ0 += (6).toRadians() }
+  if (zone === 32 && latBand === 'X' && lon < 9) { zone--; degreesToRadians(λ0 -= (6)) }
+  if (zone === 32 && latBand === 'X' && lon >= 9) { zone++; degreesToRadians(λ0 += (6)) }
+  if (zone === 34 && latBand === 'X' && lon < 21) { zone--; degreesToRadians(λ0 -= (6)) }
+  if (zone === 34 && latBand === 'X' && lon >= 21) { zone++; degreesToRadians(λ0 += (6)) }
+  if (zone === 36 && latBand === 'X' && lon < 33) { zone--; degreesToRadians(λ0 -= (6)) }
+  if (zone === 36 && latBand === 'X' && lon >= 33) { zone++; degreesToRadians(λ0 += (6)) }
 
-  var φ = lat.toRadians()
-  var λ = lon.toRadians() - λ0
+  var φ = degreesToRadians(lat)
+  var λ = degreesToRadians(lon) - λ0
 
   const a = 6378137
   const f = 1 / 298.257223563
@@ -87,4 +87,8 @@ export function latLonToUtm (coords, zone) {
   if (y < 0) y = y + falseNorthing
 
   return [x, y]
+};
+
+function degreesToRadians (degrees) {
+  return degrees * Math.PI / 180;
 };

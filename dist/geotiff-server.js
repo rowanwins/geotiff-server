@@ -1855,7 +1855,10 @@ class LandsatPdsProvider {
     const urls = [];
 
     for (var i = 0; i < bands.length; i++) {
-      urls.push(this.constructImageUrl(sceneId, bands[i]));
+      urls.push({
+        band: bands[i],
+        url: this.constructImageUrl(sceneId, bands[i])
+      });
     }
 
     return urls;
@@ -1882,7 +1885,7 @@ function latLonToUtm(coords, zone) {
 
   const falseEasting = 500e3;
   const falseNorthing = 10000e3;
-  var λ0 = ((zone - 1) * 6 - 180 + 3).toRadians(); // longitude of central meridian
+  var λ0 = degreesToRadians((zone - 1) * 6 - 180 + 3); // longitude of central meridian
   // grid zones are 8° tall; 0°N is offset 10 into latitude bands array
 
   var mgrsLatBands = 'CDEFGHJKLMNPQRSTUVWXX'; // X is repeated for 80-84°N
@@ -1891,42 +1894,42 @@ function latLonToUtm(coords, zone) {
 
   if (zone === 31 && latBand === 'V' && lon >= 3) {
     zone++;
-    λ0 += 6 .toRadians();
+    degreesToRadians(λ0 += 6);
   } // adjust zone & central meridian for Svalbard
 
 
   if (zone === 32 && latBand === 'X' && lon < 9) {
     zone--;
-    λ0 -= 6 .toRadians();
+    degreesToRadians(λ0 -= 6);
   }
 
   if (zone === 32 && latBand === 'X' && lon >= 9) {
     zone++;
-    λ0 += 6 .toRadians();
+    degreesToRadians(λ0 += 6);
   }
 
   if (zone === 34 && latBand === 'X' && lon < 21) {
     zone--;
-    λ0 -= 6 .toRadians();
+    degreesToRadians(λ0 -= 6);
   }
 
   if (zone === 34 && latBand === 'X' && lon >= 21) {
     zone++;
-    λ0 += 6 .toRadians();
+    degreesToRadians(λ0 += 6);
   }
 
   if (zone === 36 && latBand === 'X' && lon < 33) {
     zone--;
-    λ0 -= 6 .toRadians();
+    degreesToRadians(λ0 -= 6);
   }
 
   if (zone === 36 && latBand === 'X' && lon >= 33) {
     zone++;
-    λ0 += 6 .toRadians();
+    degreesToRadians(λ0 += 6);
   }
 
-  var φ = lat.toRadians();
-  var λ = lon.toRadians() - λ0;
+  var φ = degreesToRadians(lat);
+  var λ = degreesToRadians(lon) - λ0;
   const a = 6378137;
   const f = 1 / 298.257223563; // WGS 84: a = 6378137, b = 6356752.314245, f = 1/298.257223563;
 
@@ -1964,11 +1967,15 @@ function latLonToUtm(coords, zone) {
   return [x, y];
 }
 
+function degreesToRadians(degrees) {
+  return degrees * Math.PI / 180;
+}
+
 // const { createCanvas } = require('canvas')
-var tilebelt = require('tilebelt');
+var mercator = require('global-mercator');
 
 function xyzToBbox(x, y, z) {
-  return tilebelt.tileToBBOX([x, y, z]);
+  return mercator.googleToBBox([x, y, z]);
 }
 
 var GeoTIFF = require('geotiff');
@@ -2016,11 +2023,12 @@ app.get('/tiles/:x/:y/:z', async (req, res) => {
 
   const providerSrc = req.query.provider ? req.query.provider : 'landsat-pds';
   const provider = getProviderByName(providerSrc);
+  const bbox = xyzToBbox(req.params.x, req.params.y, req.params.z); // temporary windows fix
+
+  const bbox2 = xyzToBbox(req.params.x - 1, req.params.y, req.params.z);
+  bbox[2] = bbox2[2];
   const sceneMeta = await provider.getMetadata(sceneId);
-  console.log(JSON.stringify(sceneMeta));
-  const sceneUtmZone = sceneMeta.PROJECTION_PARAMETERS.UTM_ZONE;
-  const bbox = xyzToBbox(req.params.x, req.params.y, req.params.z);
-  console.log(bbox);
+  const sceneUtmZone = sceneMeta.L1_METADATA_FILE.PROJECTION_PARAMETERS.UTM_ZONE;
   const bboxMinUtm = latLonToUtm([bbox[0], bbox[1]], sceneUtmZone);
   const bboxMaxUtm = latLonToUtm([bbox[2], bbox[3]], sceneUtmZone);
   const bboxUtm = [bboxMinUtm[0], bboxMinUtm[1], bboxMaxUtm[0], bboxMaxUtm[1]];
@@ -2030,23 +2038,18 @@ app.get('/tiles/:x/:y/:z', async (req, res) => {
 
   if (mode === 'rgb') {
     requiredBandsShortNames = req.query.rgbBands ? req.query.rgbBands.split(',') : provider.naturalColorBands;
-  } // if (mode === 'calculate') {
-  //     const ratio = req.query.ratio ? req.query.ratio : '(b5-b4)/(b5+b4)'
-  //     requiredBandsShortNames = findUniqueBandShortNamesInString(ratio) //Only get the unique bands
-  // }
+  } // // if (mode === 'calculate') {
+  // //     const ratio = req.query.ratio ? req.query.ratio : '(b5-b4)/(b5+b4)'
+  // //     requiredBandsShortNames = findUniqueBandShortNamesInString(ratio) //Only get the unique bands
+  // // }
 
 
   const imagesToQuery = provider.getBandUrls(sceneId, requiredBandsShortNames);
   console.log(imagesToQuery);
 
   for (var i = 0; i < imagesToQuery.length; i++) {
-    GeoTIFF.fromUrl(imagesToQuery[i]).then(function (tiff) {
-      tiff.readRasters({
-        bbox: bboxUtm
-      });
-    }).catch(err => {
-      console.log(err);
-    });
+    const data = await getScene(imagesToQuery[i].url, bboxUtm);
+    console.log(JSON.stringify(data[0][0]));
   }
 
   res.send('hello world');
@@ -2054,6 +2057,14 @@ app.get('/tiles/:x/:y/:z', async (req, res) => {
 app.listen(port, () => {
   console.log(`Listening on ${port}`);
 });
+
+async function getScene(url, bbox) {
+  const tiff = await GeoTIFF.fromUrl(url);
+  const data = await tiff.readRasters({
+    bbox: bbox
+  });
+  return data;
+}
 
 function getProviderByName(providerSrc) {
   for (var i = 0; i < providers.length; i++) {
