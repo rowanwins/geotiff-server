@@ -48,7 +48,7 @@ app.get('/tiles/:x/:y/:z', async (req, res) => {
   const providerSrc = req.query.provider ? req.query.provider : 'landsat-pds'
   const provider = getProviderByName(providerSrc)
   const sceneMeta = await provider.getMetadata(sceneId)
-
+  console.log(JSON.stringify(sceneMeta))
   const sceneUtmZone = sceneMeta.PROJECTION_PARAMETERS.UTM_ZONE
 
   const bbox = xyzToBbox(req.params.x, req.params.y, req.params.z)
