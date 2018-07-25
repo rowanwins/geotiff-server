@@ -17,6 +17,18 @@ export class LandsatPdsProvider {
         commonName: 'Blue',
         resolution: 30,
         filePath: 'B2'
+      },
+      {
+        shortName: 'b3',
+        commonName: 'Green',
+        resolution: 30,
+        filePath: 'B3'
+      },
+      {
+        shortName: 'b4',
+        commonName: 'Red',
+        resolution: 30,
+        filePath: 'B4'
       }
     ]
   }

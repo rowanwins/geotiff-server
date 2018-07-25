@@ -84,11 +84,14 @@ export function latLonToUtm (coords, zone) {
   var y = k0 * A * ξ
 
   x = x + falseEasting
-  if (y < 0) y = y + falseNorthing
+
+  // Have commented out because for some reason the landsat images are
+  // given a UTM zone in the northern hemisphere
+  // if (y < 0) y = y + falseNorthing
 
   return [x, y]
 };
 
 function degreesToRadians (degrees) {
-  return degrees * Math.PI / 180;
-};
+  return degrees * Math.PI / 180
+}

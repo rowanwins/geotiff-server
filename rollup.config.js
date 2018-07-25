@@ -16,7 +16,8 @@ export default {
     resolve(),
     commonjs({
       include: 'node_modules/**',
-      exclude: ['node_modules/geotiff/**']
+      exclude: [ 'node_modules/geotiff/**' ],
+      ignore: [ 'conditional-runtime-dependency' ]
     }),
     babel({
       exclude: 'node_modules/**'

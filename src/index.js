@@ -1,6 +1,6 @@
 import { LandsatPdsProvider } from './providers/LandsatPdsProvider'
 import { findUniqueBandShortNamesInString, latLonToUtm } from './utils' //eslint-disable-line
-import { xyzToBbox } from './toTile'
+import { createBbox, createRgbTile } from './toTile'
 
 var GeoTIFF = require('geotiff')
 var express = require('express')
@@ -48,12 +48,10 @@ app.get('/tiles/:x/:y/:z', async (req, res) => {
   const providerSrc = req.query.provider ? req.query.provider : 'landsat-pds'
   const provider = getProviderByName(providerSrc)
 
-  const bbox = xyzToBbox(req.params.x, req.params.y, req.params.z)
-  // temporary windows fix
-  const bbox2 = xyzToBbox(req.params.x - 1, req.params.y, req.params.z)
-  bbox[2] = bbox2[2]
+  var bbox = createBbox(Number(req.params.x), Number(req.params.y), Number(req.params.z))
 
   const sceneMeta = await provider.getMetadata(sceneId)
+  console.log(sceneMeta)
   const sceneUtmZone = sceneMeta.L1_METADATA_FILE.PROJECTION_PARAMETERS.UTM_ZONE
 
   const bboxMinUtm = latLonToUtm([bbox[0], bbox[1]], sceneUtmZone)
@@ -61,7 +59,6 @@ app.get('/tiles/:x/:y/:z', async (req, res) => {
 
   const bboxUtm = [bboxMinUtm[0], bboxMinUtm[1], bboxMaxUtm[0], bboxMaxUtm[1]]
   console.log(bboxUtm)
-
   const mode = req.query.mode ? req.query.mode : 'rgb'
 
   let requiredBandsShortNames = []
@@ -75,15 +72,24 @@ app.get('/tiles/:x/:y/:z', async (req, res) => {
   // // }
 
   const imagesToQuery = provider.getBandUrls(sceneId, requiredBandsShortNames)
-
-  console.log(imagesToQuery)
+  // console.log(requiredBandsShortNames)
+  const bandData = []
 
   for (var i = 0; i < imagesToQuery.length; i++) {
     const data = await getScene(imagesToQuery[i].url, bboxUtm)
-    console.log(JSON.stringify(data[0][0]))
+    // if (i === 0) console.log(JSON.stringify(data[0]))
+    console.log(data[0][0])
+    bandData.push(data[0])
   }
+  // console.log("SFD")
+  const png = createRgbTile(bandData[0], bandData[1], bandData[2])
+  var img = new Buffer(png, 'binary')
 
-  res.send('hello world')
+  res.writeHead(200, {
+    'Content-Type': 'image/png',
+    'Content-Length': img.length
+  })
+  res.end(img)
 })
 
 app.listen(port, () => {

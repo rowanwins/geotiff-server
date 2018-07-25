@@ -1,26 +1,36 @@
-// const { createCanvas } = require('canvas')
-var mercator = require('global-mercator')
+var tilebelt = require('tilebelt')
+const PNG = require('pngjs').PNG
 
-export function xyzToBbox (x, y, z) {
-  return mercator.googleToBBox([x, y, z])
+export function createBbox (x, y, z) {
+  return tilebelt.tileToBBOX([x, y, z])
 }
 
-export function createRgbTile () {
-  const tileHeight = 512
-  const tileWidth = 512
-  const canvas = createCanvas(tileWidth, tileHeight)
-  const ctx = canvas.getContext('2d')
+export function createRgbTile (rData, gData, bData) {
 
-  color = "rgb(" + values[0] + "," + values[1] + "," + values[2] + ")"
+  const tileHeight = 254
+  const tileWidth = 254
 
-  return canvas.toBuffer('image/png', {compressionLevel: 3, filters: canvas.PNG_FILTER_NONE})
- }
+  var newfile = new PNG({
+    width: tileWidth,
+    height: tileHeight,
+    colorType: 6
+  })
 
-export function createSingleBandTile () {
-  const tileHeight = 512
-  const tileWidth = 512
-  const canvas = createCanvas(tileWidth, tileHeight)
-  const ctx = canvas.getContext('2d')
+  for (var y = 0; y < newfile.height; y++) {
+    for (var x = 0; x < newfile.width; x++) {
+      var idx = (newfile.width * y + x) << 2
+      // if(y===0)console.log(scaleVal(rData[idx]), scaleVal(gData[idx]), scaleVal(bData[idx]))
+      newfile.data[idx] = scaleVal(rData[idx])
+      newfile.data[idx + 1] = scaleVal(gData[idx])
+      newfile.data[idx + 2] = scaleVal(bData[idx])
+      newfile.data[idx + 3] = 255
+    }
+  }
 
-  return canvas.toDataURL()
- }
+  var buffer = PNG.sync.write(newfile)
+  return buffer
+}
+
+function scaleVal (val) {
+  return (val / 65535) * 255
+}
