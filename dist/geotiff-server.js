@@ -3357,7 +3357,9 @@ function latLonToUtm(coords, zone) {
 
   var x = k0 * A * η;
   var y = k0 * A * ξ;
-  x = x + falseEasting; // if (y < 0) y = y + falseNorthing
+  x = x + falseEasting; // Have commented out because for some reason the landsat images are
+  // given a UTM zone in the northern hemisphere
+  // if (y < 0) y = y + falseNorthing
 
   return [x, y];
 }
@@ -3366,39 +3368,37 @@ function degreesToRadians(degrees) {
   return degrees * Math.PI / 180;
 }
 
-var tilebelt = require('tilebelt');
+var tilebelt = require('tilebelt'); // const PNG = require('pngjs').PNG
 
-var PNG = require('pngjs').PNG;
+
+var jpeg = require('jpeg-js');
 
 function createBbox(x, y, z) {
   return tilebelt.tileToBBOX([x, y, z]);
 }
 function createRgbTile(rData, gData, bData) {
-  var tileHeight = 254;
-  var tileWidth = 254;
-  var newfile = new PNG({
-    width: tileWidth,
-    height: tileHeight,
-    colorType: 6
-  });
+  var tileHeight = 256;
+  var tileWidth = 256;
+  var frameData = Buffer.alloc(tileWidth * tileHeight * 4);
 
-  for (var y = 0; y < newfile.height; y++) {
-    for (var x = 0; x < newfile.width; x++) {
-      var idx = newfile.width * y + x << 2;
-      if (y === 0) console.log(scaleVal(rData[idx]), scaleVal(gData[idx]), scaleVal(bData[idx]));
-      newfile.data[idx] = scaleVal(rData[idx]);
-      newfile.data[idx + 1] = scaleVal(gData[idx]);
-      newfile.data[idx + 2] = scaleVal(bData[idx]);
-      newfile.data[idx + 3] = 255;
-    }
+  for (var i = 0; i < frameData.length / 4; ++i) {
+    frameData[i * 4] = scaleVal(rData[i]);
+    frameData[i * 4 + 1] = scaleVal(gData[i]);
+    frameData[i * 4 + 2] = scaleVal(bData[i]);
+    frameData[i * 4 + 3] = 0;
   }
 
-  var buffer = PNG.sync.write(newfile);
-  return buffer;
+  var rawImageData = {
+    data: frameData,
+    width: tileWidth,
+    height: tileHeight
+  };
+  var jpegImageData = jpeg.encode(rawImageData);
+  return jpegImageData;
 }
 
 function scaleVal(val) {
-  return val / 65535 * 255;
+  return Math.round(val / 65535 * 255);
 }
 
 var GeoTIFF = require('geotiff');
@@ -3470,12 +3470,12 @@ function () {
 
           case 8:
             sceneMeta = _context.sent;
-            console.log(sceneMeta);
+            // console.log(sceneMeta)
             sceneUtmZone = sceneMeta.L1_METADATA_FILE.PROJECTION_PARAMETERS.UTM_ZONE;
             bboxMinUtm = latLonToUtm([bbox[0], bbox[1]], sceneUtmZone);
             bboxMaxUtm = latLonToUtm([bbox[2], bbox[3]], sceneUtmZone);
-            bboxUtm = [bboxMinUtm[0], bboxMinUtm[1], bboxMaxUtm[0], bboxMaxUtm[1]];
-            console.log(bboxUtm);
+            bboxUtm = [bboxMinUtm[0], bboxMinUtm[1], bboxMaxUtm[0], bboxMaxUtm[1]]; // console.log(bboxUtm)
+
             mode = req.query.mode ? req.query.mode : 'rgb';
             requiredBandsShortNames = [];
 
@@ -3487,42 +3487,41 @@ function () {
             // // }
 
 
-            imagesToQuery = provider.getBandUrls(sceneId, requiredBandsShortNames); // console.log(requiredBandsShortNames)
-
+            imagesToQuery = provider.getBandUrls(sceneId, requiredBandsShortNames);
+            console.log(requiredBandsShortNames);
             bandData = [];
             i = 0;
 
-          case 21:
+          case 20:
             if (!(i < imagesToQuery.length)) {
-              _context.next = 30;
+              _context.next = 28;
               break;
             }
 
-            _context.next = 24;
+            _context.next = 23;
             return getScene(imagesToQuery[i].url, bboxUtm);
 
-          case 24:
+          case 23:
             data = _context.sent;
             // if (i === 0) console.log(JSON.stringify(data[0]))
-            console.log(data[0][0]);
             bandData.push(data[0]);
 
-          case 27:
+          case 25:
             i++;
-            _context.next = 21;
+            _context.next = 20;
             break;
 
-          case 30:
+          case 28:
             // console.log("SFD")
             png = createRgbTile(bandData[0], bandData[1], bandData[2]);
-            img = new Buffer(png, 'binary');
+            img = Buffer.from(png.data, 'binary');
             res.writeHead(200, {
-              'Content-Type': 'image/png',
+              'Content-Type': 'image/jpg',
               'Content-Length': img.length
             });
             res.end(img);
 
-          case 34:
+          case 32:
           case "end":
             return _context.stop();
         }
@@ -3558,7 +3557,9 @@ function _getScene() {
             tiff = _context2.sent;
             _context2.next = 5;
             return tiff.readRasters({
-              bbox: bbox
+              bbox: bbox,
+              width: 256,
+              height: 256
             });
 
           case 5:

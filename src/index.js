@@ -51,14 +51,14 @@ app.get('/tiles/:x/:y/:z', async (req, res) => {
   var bbox = createBbox(Number(req.params.x), Number(req.params.y), Number(req.params.z))
 
   const sceneMeta = await provider.getMetadata(sceneId)
-  console.log(sceneMeta)
+  // console.log(sceneMeta)
   const sceneUtmZone = sceneMeta.L1_METADATA_FILE.PROJECTION_PARAMETERS.UTM_ZONE
 
   const bboxMinUtm = latLonToUtm([bbox[0], bbox[1]], sceneUtmZone)
   const bboxMaxUtm = latLonToUtm([bbox[2], bbox[3]], sceneUtmZone)
 
   const bboxUtm = [bboxMinUtm[0], bboxMinUtm[1], bboxMaxUtm[0], bboxMaxUtm[1]]
-  console.log(bboxUtm)
+  // console.log(bboxUtm)
   const mode = req.query.mode ? req.query.mode : 'rgb'
 
   let requiredBandsShortNames = []
@@ -72,21 +72,20 @@ app.get('/tiles/:x/:y/:z', async (req, res) => {
   // // }
 
   const imagesToQuery = provider.getBandUrls(sceneId, requiredBandsShortNames)
-  // console.log(requiredBandsShortNames)
+  console.log(requiredBandsShortNames)
   const bandData = []
 
   for (var i = 0; i < imagesToQuery.length; i++) {
     const data = await getScene(imagesToQuery[i].url, bboxUtm)
     // if (i === 0) console.log(JSON.stringify(data[0]))
-    console.log(data[0][0])
     bandData.push(data[0])
   }
   // console.log("SFD")
   const png = createRgbTile(bandData[0], bandData[1], bandData[2])
-  var img = new Buffer(png, 'binary')
+  var img = Buffer.from(png.data, 'binary')
 
   res.writeHead(200, {
-    'Content-Type': 'image/png',
+    'Content-Type': 'image/jpg',
     'Content-Length': img.length
   })
   res.end(img)
@@ -98,7 +97,11 @@ app.listen(port, () => {
 
 async function getScene (url, bbox) {
   const tiff = await GeoTIFF.fromUrl(url)
-  const data = await tiff.readRasters({ bbox: bbox })
+  const data = await tiff.readRasters({
+    bbox: bbox,
+    width: 256,
+    height: 256
+  })
   return data
 }
 

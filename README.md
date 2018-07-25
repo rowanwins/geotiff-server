@@ -7,7 +7,7 @@ A node.js server that generate tiles from cloud-optimised geotiff's.
 
 ## Sample endpoint
 ````
-http://localhost:5000/tiles/7320/4375/13?sceneId=LC80990692014143LGN00&rgbBands=b2,b1
+http://localhost:5000/tiles/1829/1100/11?sceneId=LC80990692014143LGN00
 ````
 
 ## Why?
