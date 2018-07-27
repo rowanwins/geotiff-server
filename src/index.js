@@ -72,17 +72,19 @@ app.get('/tiles/:x/:y/:z', async (req, res) => {
   // // }
 
   const imagesToQuery = provider.getBandUrls(sceneId, requiredBandsShortNames)
-  console.log(requiredBandsShortNames)
-  const bandData = []
 
+  const getDataCalls = []
   for (var i = 0; i < imagesToQuery.length; i++) {
-    const data = await getScene(imagesToQuery[i].url, bboxUtm)
-    // if (i === 0) console.log(JSON.stringify(data[0]))
-    bandData.push(data[0])
+    getDataCalls.push(getScene(imagesToQuery[i].url, bboxUtm))
   }
-  // console.log("SFD")
-  const png = createRgbTile(bandData[0], bandData[1], bandData[2])
+  console.time('getData')
+  const [r, g, b] = await Promise.all(getDataCalls)
+  console.timeEnd('getData')
+
+  console.time('createTile')
+  const png = createRgbTile(r[0], g[0], b[0])
   var img = Buffer.from(png.data, 'binary')
+  console.timeEnd('createTile')
 
   res.writeHead(200, {
     'Content-Type': 'image/jpg',

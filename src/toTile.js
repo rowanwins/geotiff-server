@@ -25,10 +25,37 @@ export function createRgbTile (rData, gData, bData) {
     width: tileWidth,
     height: tileHeight
   }
-  var jpegImageData = jpeg.encode(rawImageData)
+  var jpegImageData = jpeg.encode(rawImageData, 100)
   return jpegImageData
 }
 
 function scaleVal (val) {
   return Math.round((val / 65535) * 255)
+}
+
+function sigmoidalContrast (data, contrast, bias) {
+  const alpha = bias
+  const beta = contrast
+
+  if (beta > 0) {
+    const denominator = 255 / (255 + Math.exp(beta * (alpha - 255))) - 255 / (255 + Math.exp(beta * alpha))
+    for (let i = 0; i < data.length; i++) {
+      const numerator = 255 / (255 + Math.exp(beta * (alpha - data[i]))) - 255 / (255 + Math.exp(beta * alpha))
+      data[i] = numerator / denominator
+    }
+  } else {
+    for (let i = 0; i < data.length; i++) {
+      data[i] = (
+        (beta * alpha) - Math.log(
+          (
+            255 / (
+              (data[i] / (255 + Math.exp((beta * alpha) - beta))) -
+              (data[i] / (255 + Math.exp(beta * alpha))) +
+              (255 / (255 + Math.exp(beta * alpha)))
+            )
+          ) - 255)
+      ) / beta
+    }
+  }
+  return data
 }
