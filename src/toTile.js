@@ -6,17 +6,20 @@ export function createBbox (x, y, z) {
   return tilebelt.tileToBBOX([x, y, z])
 }
 
-export function createRgbTile (rData, gData, bData) {
+export function createRgbTile (rData, gData, bData, meta) {
 
   const tileHeight = 256
   const tileWidth = 256
+  toaReflectance(rData, meta, 4)
+  toaReflectance(gData, meta, 3)
+  toaReflectance(bData, meta, 2)
 
   var frameData = Buffer.alloc(tileWidth * tileHeight * 4)
 
   for (let i = 0; i < frameData.length / 4; ++i) {
-    frameData[i * 4] = scaleVal(rData[i])
-    frameData[(i * 4) + 1] = scaleVal(gData[i])
-    frameData[(i * 4) + 2] = scaleVal(bData[i])
+    frameData[i * 4] = rData[i]
+    frameData[(i * 4) + 1] = gData[i]
+    frameData[(i * 4) + 2] = bData[i]
     frameData[(i * 4) + 3] = 0
   }
 
@@ -31,6 +34,21 @@ export function createRgbTile (rData, gData, bData) {
 
 function scaleVal (val) {
   return Math.round((val / 65535) * 255)
+}
+
+function toaReflectance (data, metadata, bandNumber) {
+  const sunElevation = metadata.L1_METADATA_FILE.IMAGE_ATTRIBUTES.SUN_ELEVATION
+  const se = Math.sin(degressToRadians(sunElevation))
+  const reflectanceRescalingFactor = metadata.L1_METADATA_FILE.RADIOMETRIC_RESCALING[`REFLECTANCE_MULT_BAND_${bandNumber}`]
+  const reflectanceAddition = metadata.L1_METADATA_FILE.RADIOMETRIC_RESCALING[`REFLECTANCE_ADD_BAND_${bandNumber}`]
+
+  for (var i = 0; i < data.length; i++) {
+    data[i] = (((reflectanceRescalingFactor * data[i]) + reflectanceAddition) / se) * 1000
+  }
+}
+
+function degressToRadians (degrees) {
+  return degrees * Math.PI / 180
 }
 
 function sigmoidalContrast (data, contrast, bias) {

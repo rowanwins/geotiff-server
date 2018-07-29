@@ -1111,7 +1111,7 @@ var _iterDefine = function (Base, NAME, Constructor, next, DEFAULT, IS_SET, FORC
       // Set @@toStringTag to native iterators
       _setToStringTag(IteratorPrototype, TAG, true);
       // fix for some old engines
-      if (!_library && typeof IteratorPrototype[ITERATOR$3] != 'function') _hide(IteratorPrototype, ITERATOR$3, returnThis);
+      if (typeof IteratorPrototype[ITERATOR$3] != 'function') _hide(IteratorPrototype, ITERATOR$3, returnThis);
     }
   }
   // fix Array#{values, @@iterator}.name in V8 / FF
@@ -1120,7 +1120,7 @@ var _iterDefine = function (Base, NAME, Constructor, next, DEFAULT, IS_SET, FORC
     $default = function values() { return $native.call(this); };
   }
   // Define iterator
-  if ((!_library || FORCED) && (BUGGY || VALUES_BUG || !proto[ITERATOR$3])) {
+  if (BUGGY || VALUES_BUG || !proto[ITERATOR$3]) {
     _hide(proto, ITERATOR$3, $default);
   }
   // Plug for library
@@ -4248,15 +4248,18 @@ var jpeg = require('jpeg-js');
 function createBbox(x, y, z) {
   return tilebelt.tileToBBOX([x, y, z]);
 }
-function createRgbTile(rData, gData, bData) {
+function createRgbTile(rData, gData, bData, meta) {
   var tileHeight = 256;
   var tileWidth = 256;
+  toaReflectance(rData, meta, 4);
+  toaReflectance(gData, meta, 3);
+  toaReflectance(bData, meta, 2);
   var frameData = Buffer.alloc(tileWidth * tileHeight * 4);
 
   for (var i = 0; i < frameData.length / 4; ++i) {
-    frameData[i * 4] = scaleVal(rData[i]);
-    frameData[i * 4 + 1] = scaleVal(gData[i]);
-    frameData[i * 4 + 2] = scaleVal(bData[i]);
+    frameData[i * 4] = rData[i];
+    frameData[i * 4 + 1] = gData[i];
+    frameData[i * 4 + 2] = bData[i];
     frameData[i * 4 + 3] = 0;
   }
 
@@ -4269,8 +4272,19 @@ function createRgbTile(rData, gData, bData) {
   return jpegImageData;
 }
 
-function scaleVal(val) {
-  return Math.round(val / 65535 * 255);
+function toaReflectance(data, metadata, bandNumber) {
+  var sunElevation = metadata.L1_METADATA_FILE.IMAGE_ATTRIBUTES.SUN_ELEVATION;
+  var se = Math.sin(degressToRadians(sunElevation));
+  var reflectanceRescalingFactor = metadata.L1_METADATA_FILE.RADIOMETRIC_RESCALING["REFLECTANCE_MULT_BAND_".concat(bandNumber)];
+  var reflectanceAddition = metadata.L1_METADATA_FILE.RADIOMETRIC_RESCALING["REFLECTANCE_ADD_BAND_".concat(bandNumber)];
+
+  for (var i = 0; i < data.length; i++) {
+    data[i] = (reflectanceRescalingFactor * data[i] + reflectanceAddition) / se * 1000;
+  }
+}
+
+function degressToRadians(degrees) {
+  return degrees * Math.PI / 180;
 }
 
 var GeoTIFF = require('geotiff');
@@ -4365,30 +4379,30 @@ function () {
 
             for (i = 0; i < imagesToQuery.length; i++) {
               getDataCalls.push(getScene(imagesToQuery[i].url, bboxUtm));
-            }
+            } // console.time('getData')
 
-            console.time('getData');
-            _context.next = 22;
+
+            _context.next = 21;
             return Promise.all(getDataCalls);
 
-          case 22:
+          case 21:
             _ref2 = _context.sent;
             _ref3 = _slicedToArray(_ref2, 3);
             r = _ref3[0];
             g = _ref3[1];
             b = _ref3[2];
-            console.timeEnd('getData');
-            console.time('createTile');
-            png = createRgbTile(r[0], g[0], b[0]);
-            img = Buffer.from(png.data, 'binary');
-            console.timeEnd('createTile');
+            // console.timeEnd('getData')
+            // console.time('createTile')
+            png = createRgbTile(r[0], g[0], b[0], sceneMeta);
+            img = Buffer.from(png.data, 'binary'); // console.timeEnd('createTile')
+
             res.writeHead(200, {
               'Content-Type': 'image/jpg',
               'Content-Length': img.length
             });
             res.end(img);
 
-          case 34:
+          case 30:
           case "end":
             return _context.stop();
         }

@@ -77,14 +77,14 @@ app.get('/tiles/:x/:y/:z', async (req, res) => {
   for (var i = 0; i < imagesToQuery.length; i++) {
     getDataCalls.push(getScene(imagesToQuery[i].url, bboxUtm))
   }
-  console.time('getData')
+  // console.time('getData')
   const [r, g, b] = await Promise.all(getDataCalls)
-  console.timeEnd('getData')
+  // console.timeEnd('getData')
 
-  console.time('createTile')
-  const png = createRgbTile(r[0], g[0], b[0])
+  // console.time('createTile')
+  const png = createRgbTile(r[0], g[0], b[0], sceneMeta)
   var img = Buffer.from(png.data, 'binary')
-  console.timeEnd('createTile')
+  // console.timeEnd('createTile')
 
   res.writeHead(200, {
     'Content-Type': 'image/jpg',
