@@ -4414,9 +4414,9 @@ function () {
     return _ref.apply(this, arguments);
   };
 }());
-app.listen(port$1, function () {
-  console.log("Listening on ".concat(port$1));
-});
+module.exports = app; // app.listen(port, () => {
+//   console.log(`Listening on ${port}`)
+// })
 
 function getScene(_x3, _x4) {
   return _getScene.apply(this, arguments);

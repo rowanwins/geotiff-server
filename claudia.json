@@ -1,0 +1,10 @@
+{
+  "lambda": {
+    "role": "geotiff-server-executor",
+    "name": "geotiff-server",
+    "region": "us-west-2"
+  },
+  "api": {
+    "id": "hqp4riym0e"
+  }
+}
