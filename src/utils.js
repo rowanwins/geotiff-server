@@ -92,6 +92,6 @@ export function latLonToUtm (coords, zone) {
   return [x, y]
 };
 
-function degreesToRadians (degrees) {
+export function degreesToRadians (degrees) {
   return degrees * Math.PI / 180
 }

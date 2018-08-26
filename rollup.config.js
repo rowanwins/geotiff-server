@@ -5,8 +5,7 @@ import commonjs from 'rollup-plugin-commonjs'
 export default {
   input: 'src/index.js',
   output: {
-    file: 'server.js',
-    // file: 'dist/geotiff-server.js',
+    file: 'dist/geotiff-server.js',
     format: 'cjs'
   },
   watch: {

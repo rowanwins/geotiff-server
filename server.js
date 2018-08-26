@@ -3904,6 +3904,16 @@ function () {
       commonName: 'Red',
       resolution: 30,
       filePath: 'B4'
+    }, {
+      shortName: 'b5',
+      commonName: 'NIR',
+      resolution: 30,
+      filePath: 'B5'
+    }, {
+      shortName: 'b6',
+      commonName: 'SWIR-1',
+      resolution: 30,
+      filePath: 'B6'
     }];
   }
 
@@ -4271,6 +4281,9 @@ var jpeg = require('jpeg-js');
 
 var Parser = require('expr-eval').Parser;
 
+var chroma = require('chroma-js');
+
+var scale = chroma.scale(['green', 'white', 'blue']).domain([-1, 1]);
 function createBbox(x, y, z) {
   return tilebelt.tileToBBOX([x, y, z]);
 }
@@ -4297,21 +4310,28 @@ function createRgbTile(rData, gData, bData, meta) {
   var jpegImageData = jpeg.encode(rawImageData, 100);
   return jpegImageData;
 }
-function createSingleBandTile(data, expression, bandsInExpression) {
+function createSingleBandTile(data, expression, bandsInExpression, meta) {
   var tileHeight = 256;
   var tileWidth = 256;
-  var frameData = Buffer.alloc(tileWidth * tileHeight);
+  var frameData = Buffer.alloc(tileWidth * tileHeight * 4);
+  toaReflectance(data['b3'][0], meta, 3);
+  toaReflectance(data['b5'][0], meta, 5);
   var parser = new Parser();
   var expr = parser.parse(expression);
 
-  for (var i = 0; i < frameData.length; i++) {
+  for (var i = 0; i < frameData.length / 4; ++i) {
     var args = {};
 
-    for (var ii = 0; i < bandsInExpression.length; ii++) {
-      args[bandsInExpression[ii]] = bandsInExpression[ii][i];
+    for (var ii = 0; ii < bandsInExpression.length; ii++) {
+      args[bandsInExpression[ii]] = data[bandsInExpression[ii]][0][i];
     }
 
-    frameData[i] = expr.evaluate(args);
+    var out = expr.evaluate(args);
+    var rgb = scale(out);
+    frameData[i * 4] = rgb._rgb[0];
+    frameData[i * 4 + 1] = rgb._rgb[1];
+    frameData[i * 4 + 2] = rgb._rgb[2];
+    frameData[i * 4 + 3] = 0;
   }
 
   var rawImageData = {
@@ -9317,7 +9337,7 @@ require('express-async-errors');
 
 var port$1 = process.env.PORT || 5000;
 var app = express();
-var providers = [new LandsatPdsProvider()];
+var providers$1 = [new LandsatPdsProvider()];
 app.get('/', function (req, res) {
   res.send('hello world');
 });
@@ -9372,7 +9392,7 @@ function () {
           case 3:
             //eslint-disable-line
             providerSrc = req.query.provider ? req.query.provider : 'landsat-pds';
-            provider = getProviderByName(providerSrc);
+            provider = getProviderByName$1(providerSrc);
             bbox = createBbox(Number(req.params.x), Number(req.params.y), Number(req.params.z));
             _context.next = 8;
             return provider.getMetadata(sceneId);
@@ -9440,7 +9460,7 @@ function () {
           case 3:
             //eslint-disable-line
             providerSrc = req.query.provider ? req.query.provider : 'landsat-pds';
-            provider = getProviderByName(providerSrc);
+            provider = getProviderByName$1(providerSrc);
             bbox = createBbox(Number(req.params.x), Number(req.params.y), Number(req.params.z));
             _context2.next = 8;
             return provider.getMetadata(sceneId);
@@ -9451,7 +9471,7 @@ function () {
             bboxMinUtm = latLonToUtm([bbox[0], bbox[1]], sceneUtmZone);
             bboxMaxUtm = latLonToUtm([bbox[2], bbox[3]], sceneUtmZone);
             bboxUtm = [bboxMinUtm[0], bboxMinUtm[1], bboxMaxUtm[0], bboxMaxUtm[1]];
-            ratio = req.query.ratio ? req.query.ratio : '(b5-b4)/(b5+b4)';
+            ratio = req.query.ratio ? req.query.ratio : '(b3-b5)/(b3+b5)';
             requiredBandsShortNames = findUniqueBandShortNamesInString(ratio);
             imagesToQuery = provider.getBandUrls(sceneId, requiredBandsShortNames);
             getDataCalls = [];
@@ -9467,11 +9487,11 @@ function () {
             data = _context2.sent;
             dataIn = {};
 
-            for (ii = 0; i < data.length; ii++) {
+            for (ii = 0; ii < data.length; ii++) {
               dataIn[data[ii].band] = data[ii].data;
             }
 
-            png = createSingleBandTile(dataIn, ratio, requiredBandsShortNames);
+            png = createSingleBandTile(dataIn, ratio, requiredBandsShortNames, sceneMeta);
             img = Buffer.from(png.data, 'binary');
             res.contentType('image/jpeg');
             res.send(img);
@@ -9487,10 +9507,11 @@ function () {
   return function (_x3, _x4) {
     return _ref4.apply(this, arguments);
   };
-}());
-module.exports = app; // app.listen(port, () => {
-//   console.log(`Listening on ${port}`)
-// })
+}()); // module.exports = app
+
+app.listen(port$1, function () {
+  console.log("Listening on ".concat(port$1));
+});
 
 function getScene(_x5, _x6) {
   return _getScene.apply(this, arguments);
@@ -9534,10 +9555,10 @@ function _getScene() {
   return _getScene.apply(this, arguments);
 }
 
-function getProviderByName(providerSrc) {
-  for (var i = 0; i < providers.length; i++) {
-    if (providers[i].name === providerSrc) {
-      return providers[i];
+function getProviderByName$1(providerSrc) {
+  for (var i = 0; i < providers$1.length; i++) {
+    if (providers$1[i].name === providerSrc) {
+      return providers$1[i];
     }
   }
 }
