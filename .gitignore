@@ -7,3 +7,4 @@ yarn-error.log*
 
 .serverless/
 server.js
+test.html
