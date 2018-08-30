@@ -1,4 +1,4 @@
-var chroma = require('chroma-js')
+import chroma from 'chroma-js'
 
 export function getRampByName (name) {
   if (name === 'NDWI') return createNdwi()

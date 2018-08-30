@@ -10,6 +10,7 @@ export default async (req, res) => {
   const provider = getProviderByName(providerSrc)
 
   provider.metadata = await provider.getMetadata(sceneId)
+
   var requestBbox = createBbox(Number(req.params.x), Number(req.params.y), Number(req.params.z))
   let imgBbox = requestBbox
   if (provider.requiresReprojecting) imgBbox = provider.reprojectBbbox(requestBbox)

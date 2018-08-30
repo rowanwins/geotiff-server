@@ -1,14 +1,14 @@
 {
   "name": "geotiff-server",
   "version": "0.0.1",
-  "description": "A tile server based on geotiff.js and geoblaze",
+  "description": "A Cloud Optimised Geotiff tile server based on geotiff.js",
   "main": "index.js",
   "scripts": {
     "build:dev": "rollup -c -w",
     "build": "cross-env NODE_ENV=production rollup -c",
     "dev": "run-p build:dev serve",
-    "serve": "nodemon dist/geotiff-server.js",
-    "start": "node dist/geotiff-server.js",
+    "serve": "nodemon server.js",
+    "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -24,6 +24,7 @@
     "jpeg-js": "^0.3.4",
     "node-fetch": "^2.1.2",
     "pngjs": "^3.3.3",
+    "serverless-http": "^1.6.0",
     "tilebelt": "^1.0.1"
   },
   "devDependencies": {
@@ -46,7 +47,9 @@
     "rollup": "^0.63.2",
     "rollup-plugin-babel": "^4.0.0-beta.7",
     "rollup-plugin-commonjs": "^9.1.3",
-    "rollup-plugin-node-resolve": "^3.3.0"
+    "rollup-plugin-json": "^3.0.0",
+    "rollup-plugin-node-resolve": "^3.3.0",
+    "serverless-apigw-binary": "^0.4.4"
   },
   "engines": {
     "node": "8.5.0"

@@ -1,9 +1,10 @@
 import { getRampByName, getRgbFromRamp } from './symbology'
 
 // const PNG = require('pngjs').PNG
-const tilebelt = require('tilebelt')
-var jpeg = require('jpeg-js')
-var Parser = require('expr-eval').Parser
+import tilebelt from 'tilebelt'
+import jpeg from 'jpeg-js'
+import expr from 'expr-eval'
+const Parser = expr.Parser
 
 const tileHeight = 256
 const tileWidth = 256

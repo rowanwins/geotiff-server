@@ -1,20 +1,25 @@
 import 'babel-polyfill'
+
 import { routes } from './routes'
 
 // Setup the expressjs server
-var express = require('express')
-require('express-async-errors')
+import express from 'express'
+import serverless from 'serverless-http'
+import expressAsync from 'express-async-errors' //eslint-disable-line
 
 // Set up the imagery providers
-import providers from './providers'
-
-const port = process.env.PORT || 5000
+import providers from './providers' //eslint-disable-line
 
 var app = express()
 app.use('/', routes)
 
-// module.exports = app
-
-app.listen(port, () => {
-  console.log(`Listening on ${port}`)
+module.exports.handler = serverless(app, {
+  binary: ['image/png', 'image/jpeg']
 })
+
+if (process.env.NODE_ENV !== 'production') {
+  const port = process.env.PORT || 5000
+  app.listen(port, () => {
+    console.log(`Listening on ${port}`)
+  })
+}
