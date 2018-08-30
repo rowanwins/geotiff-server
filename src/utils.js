@@ -8,7 +8,7 @@ export function getUniqueValues (arr) {
 
 export function findUniqueBandShortNamesInString (string) {
   var regExpressionTester = /(b)\d+/g
-  return getUniqueValues(regExpressionTester.exec(string))
+  return getUniqueValues(string.match(regExpressionTester))
 }
 
 export function latLonToUtm (coords, zone) {
@@ -92,6 +92,6 @@ export function latLonToUtm (coords, zone) {
   return [x, y]
 };
 
-function degreesToRadians (degrees) {
+export function degreesToRadians (degrees) {
   return degrees * Math.PI / 180
 }

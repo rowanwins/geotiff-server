@@ -1,22 +1,34 @@
 import resolve from 'rollup-plugin-node-resolve'
 import babel from 'rollup-plugin-babel'
 import commonjs from 'rollup-plugin-commonjs'
+import json from 'rollup-plugin-json'
 
 export default {
   input: 'src/index.js',
   output: {
-    file: 'dist/geotiff-server.js',
-    format: 'cjs'
+    file: 'server.js',
+    format: 'cjs',
+    sourcemap: 'inline'
   },
+  external: ['http', 'fs', 'util', 'querystring', 'string_decoder', 'https', 'url', 'stream', 'events', 'path', 'net', 'buffer', 'tty', 'zlib', 'crypto'],
   watch: {
     include: 'src/**',
-    exclude: 'node_modules/**'
+    exclude: ['node_modules/**', 'geotiff/**']
   },
   plugins: [
-    resolve(),
+    json(),
+    resolve({
+      module: true,
+      jsnext: true,
+      main: true,
+      preferBuiltins: true
+    }),
     commonjs({
       include: 'node_modules/**',
-      exclude: [ 'node_modules/geotiff/**' ],
+      // exclude: [ 'node_modules/geotiff/**' ],
+      // namedExports: {
+      //   'geotiff/dist/geotiff.bundle.min.js': ['GeoTIFF']
+      // },
       ignore: [ 'conditional-runtime-dependency' ]
     }),
     babel({

@@ -1,0 +1,39 @@
+service: geotiff-server
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  stage: production
+  region: us-west-2
+
+  iamRoleStatements:
+  -  Effect: "Allow"
+     Action:
+       - "s3:GetObject"
+     Resource:
+       - "arn:aws:s3:::landsat-pds/*"
+
+custom:
+  apigwBinary:
+    types:
+      - '*/*'
+
+plugins:
+  - serverless-apigw-binary
+
+functions:
+  app:
+    handler: server.handler
+    memorySize: 1536
+    timeout: 20
+    events:
+      - http:
+          path: /{proxy+}
+          method: get
+          cors: true
+
+package:
+  exclude:
+    - ".*/**"
+  include:
+    - server.js
