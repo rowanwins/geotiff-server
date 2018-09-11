@@ -11,7 +11,7 @@ export function findUniqueBandShortNamesInString (string) {
   return getUniqueValues(string.match(regExpressionTester))
 }
 
-export function latLonToUtm (coords, zone) {
+export function latLonToUtm (coords, zone, requiresSouthernHemiAdjustment) {
   const lat = coords[1]
   const lon = coords[0]
 
@@ -85,13 +85,15 @@ export function latLonToUtm (coords, zone) {
 
   x = x + falseEasting
 
-  // Have commented out because for some reason the landsat images are
-  // given a UTM zone in the northern hemisphere
-  // if (y < 0) y = y + falseNorthing
+  if (requiresSouthernHemiAdjustment && y < 0) y = y + falseNorthing
 
   return [x, y]
 };
 
 export function degreesToRadians (degrees) {
   return degrees * Math.PI / 180
+}
+
+export function scaleValueBetweenRange (value, max, min) {
+  return (value - min) / (max - min)
 }

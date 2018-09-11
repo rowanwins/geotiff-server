@@ -1,6 +1,5 @@
-import { getRampByName, getRgbFromRamp } from './symbology'
+import { getRgbFromRamp } from './symbology'
 
-// const PNG = require('pngjs').PNG
 import tilebelt from 'tilebelt'
 import jpeg from 'jpeg-js'
 import expr from 'expr-eval'
@@ -15,7 +14,6 @@ export function createBbox (x, y, z) {
 }
 
 export function createRgbTile (rData, gData, bData) {
-
   for (let i = 0; i < frameData.length / 4; i++) {
     frameData[i * 4] = rData[i]
     frameData[(i * 4) + 1] = gData[i]
@@ -26,11 +24,10 @@ export function createRgbTile (rData, gData, bData) {
   return encodeImageData(frameData)
 }
 
-export function createSingleBandTile (bands, expression, styleName) {
+export function createSingleBandTile (bands, expression, colorRamp) {
 
   var parser = new Parser()
   var expr = parser.parse(expression)
-  const colorRamp = getRampByName(styleName)
 
   for (let i = 0; i < frameData.length / 4; i++) {
     const args = {}
@@ -44,7 +41,7 @@ export function createSingleBandTile (bands, expression, styleName) {
     frameData[i * 4] = rgb[0]
     frameData[(i * 4) + 1] = rgb[1]
     frameData[(i * 4) + 2] = rgb[2]
-    frameData[(i * 4) + 3] = 0
+    frameData[(i * 4) + 3] = rgb[3]
   }
 
   return encodeImageData(frameData)

@@ -4,13 +4,12 @@ import { getScene } from '../cog'
 
 export default async (req, res) => {
   const sceneId = req.query.sceneId ? req.query.sceneId : null
-  if (sceneId === null) throw 'GeoTiff-Server Error: You must pass in a sceneId to your query' //eslint-disable-line
+  if (sceneId === null) throw new Error('GeoTiff-Server: You must pass in a sceneId to your query')
 
   const providerSrc = req.query.provider ? req.query.provider : 'landsat-pds'
   const provider = getProviderByName(providerSrc)
 
   provider.metadata = await provider.getMetadata(sceneId)
-
   var requestBbox = createBbox(Number(req.params.x), Number(req.params.y), Number(req.params.z))
   let imgBbox = requestBbox
   if (provider.requiresReprojecting) imgBbox = provider.reprojectBbbox(requestBbox)
@@ -30,4 +29,5 @@ export default async (req, res) => {
 
   res.contentType('image/jpeg')
   res.send(img)
+
 }

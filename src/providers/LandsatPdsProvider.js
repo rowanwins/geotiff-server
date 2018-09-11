@@ -112,9 +112,13 @@ export class LandsatPdsProvider {
     const reflectanceRescalingFactor = this.metadata.L1_METADATA_FILE.RADIOMETRIC_RESCALING[`REFLECTANCE_MULT_BAND_${band.bandNumber}`]
     const reflectanceAddition = this.metadata.L1_METADATA_FILE.RADIOMETRIC_RESCALING[`REFLECTANCE_ADD_BAND_${band.bandNumber}`]
 
+    const tmp = new Float32Array(band.data.length)
     for (var i = 0; i < band.data.length; i++) {
-      band.data[i] = (((reflectanceRescalingFactor * band.data[i]) + reflectanceAddition) / se) * 1000
+      band.data[i] = (((reflectanceRescalingFactor * band.data[i]) + reflectanceAddition) / se) * 100000
+      tmp[i] = band.data[i] / 65535
+      band.data[i] = Math.round(tmp[i] * 255)
     }
+
   }
 
 }

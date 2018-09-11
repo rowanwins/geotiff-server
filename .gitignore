@@ -6,5 +6,6 @@ yarn-debug.log*
 yarn-error.log*
 
 .serverless/
+test/harness/
 server.js
 test.html

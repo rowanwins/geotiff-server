@@ -1,6 +1,7 @@
 import { LandsatPdsProvider } from './LandsatPdsProvider'
+import { DeaProvider } from './DeaProvider'
 
-const providerList = [new LandsatPdsProvider()]
+const providerList = [new LandsatPdsProvider(), new DeaProvider()]
 export default providerList
 
 export function getProviderByName (providerName) {

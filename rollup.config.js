@@ -25,10 +25,6 @@ export default {
     }),
     commonjs({
       include: 'node_modules/**',
-      // exclude: [ 'node_modules/geotiff/**' ],
-      // namedExports: {
-      //   'geotiff/dist/geotiff.bundle.min.js': ['GeoTIFF']
-      // },
       ignore: [ 'conditional-runtime-dependency' ]
     }),
     babel({

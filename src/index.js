@@ -7,9 +7,6 @@ import express from 'express'
 import serverless from 'serverless-http'
 import expressAsync from 'express-async-errors' //eslint-disable-line
 
-// Set up the imagery providers
-import providers from './providers' //eslint-disable-line
-
 var app = express()
 app.use('/', routes)
 

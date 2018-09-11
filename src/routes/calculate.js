@@ -2,10 +2,13 @@ import { getProviderByName } from '../providers'
 import { createBbox, createSingleBandTile } from '../tiler'
 import { findUniqueBandShortNamesInString } from '../utils'
 import { getScene } from '../cog'
+import { getRampByName } from '../symbology'
 
-export default async (req, res) => {
+export default async (req, res, next) => {
   const sceneId = req.query.sceneId ? req.query.sceneId : null
-  if (sceneId === null) throw 'GeoTiff-Server: You must pass in a sceneId to your query' //eslint-disable-line
+  const ratio = req.query.ratio ? req.query.ratio : null
+
+  if (sceneId === null || ratio === null) throw new Error('GeoTiff-Server: You must pass in sceneId and ratio parameters to your query')
 
   const providerSrc = req.query.provider ? req.query.provider : 'landsat-pds'
   const provider = getProviderByName(providerSrc)
@@ -17,8 +20,9 @@ export default async (req, res) => {
   if (provider.requiresReprojecting) imgBbox = provider.reprojectBbbox(requestBbox)
 
   const style = req.query.style ? req.query.style : 'NDWI'
+  const classes = req.query.classes ? req.query.classes : null
+  const colorRamp = getRampByName(style, classes)
 
-  const ratio = req.query.ratio ? req.query.ratio : '(b3-b5)/(b3+b5)'
   const requiredBandsShortNames = findUniqueBandShortNamesInString(ratio)
 
   const bandsToUse = provider.getRequiredBandsByShortNames(requiredBandsShortNames, sceneId)
@@ -30,7 +34,7 @@ export default async (req, res) => {
 
   const data = await Promise.all(getDataCalls)
 
-  const png = createSingleBandTile(data, ratio, style)
+  const png = createSingleBandTile(data, ratio, colorRamp)
   var img = Buffer.from(png.data, 'binary')
 
   res.contentType('image/jpeg')
