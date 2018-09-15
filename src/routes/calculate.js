@@ -2,7 +2,7 @@ import { getProviderByName } from '../providers'
 import { createBbox, createSingleBandTile } from '../tiler'
 import { findUniqueBandShortNamesInString } from '../utils'
 import { getScene } from '../cog'
-import { getRampByName } from '../symbology'
+import { getRampByName, createCustomRamp } from '../symbology'
 
 export default async (req, res, next) => {
   const sceneId = req.query.sceneId ? req.query.sceneId : null
@@ -20,8 +20,14 @@ export default async (req, res, next) => {
   if (provider.requiresReprojecting) imgBbox = provider.reprojectBbbox(requestBbox)
 
   const style = req.query.style ? req.query.style : 'NDWI'
-  const classes = req.query.classes ? req.query.classes : null
-  const colorRamp = getRampByName(style, classes)
+
+  let colorRamp = null
+  if (style === 'custom') {
+    colorRamp = createCustomRamp(req.query)
+  } else {
+    const classes = req.query.classes ? req.query.classes : null
+    colorRamp = getRampByName(style, classes)
+  }
 
   const requiredBandsShortNames = findUniqueBandShortNamesInString(ratio)
 
