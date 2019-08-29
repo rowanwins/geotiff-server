@@ -28,15 +28,15 @@ var mymap = L.map('mapid').setView([-20.4, 141.4], 12)
 // L.tileLayer('http://localhost:5000/tiles/{x}/{y}/{z}.jpeg?{sceneId}&{provider}&{percentiles}', {
 //   sceneId: 'sceneId=S2A_OPER_MSI_ARD_TL_EPAE_20190828T022125_A021835_T54KWC_N02.08',
 //   provider: 'provider=DEA',
-//   percentiles: 'percentiles={"b2":[630,1320], "b3":[911,1850], "b4":[1198,2646]}',
+//   percentiles: '&pMin=630&pMax=2646',
 //   maxZoom: 16
 // }).addTo(mymap)
 
-L.tileLayer('https://fngolf6uu6.execute-api.ap-southeast-2.amazonaws.com/production/tiles/{x}/{y}/{z}.jpeg?{sceneId}&{provider}&{percentiles}', {
-  sceneId: 'sceneId=S2A_OPER_MSI_ARD_TL_EPAE_20190828T022125_A021835_T54KWC_N02.08',
-  provider: 'provider=DEA',
-  percentiles: '&pMin=630&pMax=2646'
-}).addTo(mymap)
+// L.tileLayer('https://fngolf6uu6.execute-api.ap-southeast-2.amazonaws.com/production/tiles/{x}/{y}/{z}.jpeg?{sceneId}&{provider}&{percentiles}', {
+//   sceneId: 'sceneId=S2A_OPER_MSI_ARD_TL_EPAE_20190828T022125_A021835_T54KWC_N02.08',
+//   provider: 'provider=DEA',
+//   percentiles: '&pMin=630&pMax=2646'
+// }).addTo(mymap)
 
 // L.tileLayer('https://fngolf6uu6.execute-api.ap-southeast-2.amazonaws.com/production/tiles/calculate/{x}/{y}/{z}.jpeg?{sceneId}&{provider}&{percentiles}', {
 //   sceneId: 'sceneId=S2A_OPER_MSI_ARD_TL_EPAE_20190828T022125_A021835_T54KWC_N02.08',
