@@ -14,7 +14,6 @@ export function findUniqueBandShortNamesInString (string) {
 export function latLonToUtm (coords, zone, requiresSouthernHemiAdjustment) {
   const lat = coords[1]
   const lon = coords[0]
-
   if (!(-80 <= lat && lat <= 84)) throw new Error('Outside UTM limits') //eslint-disable-line
 
   const falseEasting = 500e3
@@ -96,4 +95,10 @@ export function degreesToRadians (degrees) {
 
 export function scaleValueBetweenRange (value, max, min) {
   return (value - min) / (max - min)
+}
+
+export function rescaleValueTo256 (oldVal, percentiles) {
+  if (oldVal < percentiles[0]) return 0
+  if (oldVal > percentiles[1]) return 255
+  return (255 - 0) * (oldVal - percentiles[0]) / (percentiles[1] - percentiles[0]) + 0
 }

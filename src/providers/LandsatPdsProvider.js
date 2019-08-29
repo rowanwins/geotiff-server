@@ -99,8 +99,9 @@ export class LandsatPdsProvider {
     return meta
   }
 
-  reprojectBbbox (requestBbox) {
-    const sceneUtmZone = this.metadata.L1_METADATA_FILE.PROJECTION_PARAMETERS.UTM_ZONE
+  reprojectBbbox (requestBbox, nativeSR) {
+    const zoneHemi = nativeSR.split('UTM zone ')[1]
+    const sceneUtmZone = zoneHemi.substring(0, 2)
     const bboxMinUtm = latLonToUtm([requestBbox[0], requestBbox[1]], sceneUtmZone)
     const bboxMaxUtm = latLonToUtm([requestBbox[2], requestBbox[3]], sceneUtmZone)
     return [bboxMinUtm[0], bboxMinUtm[1], bboxMaxUtm[0], bboxMaxUtm[1]]

@@ -5,7 +5,8 @@ import { latLonToUtm } from '../utils'
 export class DeaProvider {
   constructor () {
     this.name = 'DEA'
-    this.baseUrl = 'http://dea-public-data.s3-ap-southeast-2.amazonaws.com/L2/sentinel-2-nrt/'
+    this.baseUrl = 'https://data.dea.ga.gov.au/L2/sentinel-2-nrt/'
+    // this.baseUrl = 'http://dea-public-data.s3-ap-southeast-2.amazonaws.com/L2/sentinel-2-nrt/'
     this.naturalColorBands = ['b4', 'b3', 'b2']
     this.bands = [
       {
@@ -64,20 +65,20 @@ export class DeaProvider {
         resolution: 30,
         filePath: 'B08'
       },
-      {
-        shortName: 'b9',
-        bandNumber: 9,
-        commonName: 'SWIR-1',
-        resolution: 30,
-        filePath: 'B09'
-      },
-      {
-        shortName: 'b10',
-        bandNumber: 10,
-        commonName: 'SWIR-1',
-        resolution: 30,
-        filePath: 'B10'
-      },
+      // {
+      //   shortName: 'b9',
+      //   bandNumber: 9,
+      //   commonName: 'SWIR-1',
+      //   resolution: 30,
+      //   filePath: 'B09'
+      // },
+      // {
+      //   shortName: 'b10',
+      //   bandNumber: 10,
+      //   commonName: 'SWIR-1',
+      //   resolution: 30,
+      //   filePath: 'B10'
+      // },
       {
         shortName: 'b11',
         bandNumber: 11,
@@ -87,12 +88,12 @@ export class DeaProvider {
       }
     ]
     this.requiresReprojecting = true
-    this.requiresToaCorrection = true
+    this.requiresToaCorrection = false
   }
 
   constructImageUrl (sceneId, band) {
     // var basepath = 'http://dea-public-data.s3-ap-southeast-2.amazonaws.com/L2/sentinel-2-nrt/S2MSIARD/2018-08-21/S2A_OPER_MSI_ARD_TL_SGS__20180821T013813_A016515_T56KKB_N02.06/LAMBERTIAN/LAMBERTIAN_'
-    const part = sceneId.split('__')[1]
+    const part = sceneId.split('EPAE_')[1]
     const date = part.substring(0, 8)
     const year = date.substring(0, 4)
     const month = date.substring(4, 6)
@@ -121,15 +122,14 @@ export class DeaProvider {
     for (var i = 0; i < bands.length; i++) {
       urls.push({
         band: bands[i],
-        url: this.constructImageUrl(sceneId, bands[i])
+        urlPath: this.constructImageUrl(sceneId, bands[i])
       })
     }
     return urls
   }
 
   async getMetadata (sceneId) {
-    // var metaUrl = 'http://dea-public-data.s3-ap-southeast-2.amazonaws.com/L2/sentinel-2-nrt/S2MSIARD/2018-08-21/S2A_OPER_MSI_ARD_TL_SGS__20180821T013813_A016515_T56KKB_N02.06/ARD-METADATA.yaml'
-    const part = sceneId.split('__')[1]
+    const part = sceneId.split('EPAE_')[1]
     const date = part.substring(0, 8)
     const year = date.substring(0, 4)
     const month = date.substring(4, 6)
@@ -143,21 +143,17 @@ export class DeaProvider {
     return meta
   }
 
-  reprojectBbbox (requestBbox) {
-    const sceneSpatialRef = this.metadata.grid_spatial.projection.spatial_reference
-    const zoneHemi = sceneSpatialRef.split('UTM zone ')[1]
+  getBBox () {
+    const coords = this.metadata.grid_spatial.projection.geo_ref_points
+    return [coords.ll.x, coords.ll.y, coords.ur.x, coords.ur.y]
+  }
+
+  reprojectBbbox (requestBbox, nativeSR) {
+    const zoneHemi = nativeSR.split('UTM zone ')[1]
     const sceneUtmZone = zoneHemi.substring(0, 2)
     const bboxMinUtm = latLonToUtm([requestBbox[0], requestBbox[1]], sceneUtmZone, true)
     const bboxMaxUtm = latLonToUtm([requestBbox[2], requestBbox[3]], sceneUtmZone, true)
     return [bboxMinUtm[0], bboxMinUtm[1], bboxMaxUtm[0], bboxMaxUtm[1]]
-  }
-
-  performToa (band) {
-    const tmp = new Float32Array(band.data.length)
-    for (var i = 0; i < band.data.length; i++) {
-      tmp[i] = band.data[i] / 2600
-      band.data[i] = Math.round(tmp[i] * 255)
-    }
   }
 
 }

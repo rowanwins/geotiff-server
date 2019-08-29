@@ -18,17 +18,15 @@ export default {
   plugins: [
     json(),
     resolve({
-      module: true,
-      jsnext: true,
       main: true,
       preferBuiltins: true
     }),
     commonjs({
-      include: 'node_modules/**',
-      ignore: [ 'conditional-runtime-dependency' ]
+      include: 'node_modules/**'
     }),
     babel({
-      exclude: 'node_modules/**'
+      exclude: 'node_modules/**',
+      externalHelpers: false
     })
   ]
 }
