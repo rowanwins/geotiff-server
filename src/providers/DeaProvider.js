@@ -148,6 +148,11 @@ export class DeaProvider {
     return [coords.ll.x, coords.ll.y, coords.ur.x, coords.ur.y]
   }
 
+  getWgsBBox () {
+    const coords = this.metadata.extent.coord
+    return [coords.ll.lat, coords.ll.lon, coords.ur.lat, coords.ur.lon]
+  }
+
   reprojectBbbox (requestBbox, nativeSR) {
     const zoneHemi = nativeSR.split('UTM zone ')[1]
     const sceneUtmZone = zoneHemi.substring(0, 2)

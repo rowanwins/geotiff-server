@@ -6,8 +6,10 @@ import { routes } from './routes'
 import express from 'express'
 import serverless from 'serverless-http'
 import expressAsync from 'express-async-errors' //eslint-disable-line
+import cors from 'cors'
 
 var app = express()
+app.use(cors())
 app.use('/', routes)
 
 module.exports.handler = serverless(app, {

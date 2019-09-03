@@ -12,23 +12,30 @@ export default async (req, res) => {
 
   let imgBbox = provider.getBBox()
 
-  const requiredBandsShortNames = provider.bands
-  const urls = provider.getBandUrls(sceneId, requiredBandsShortNames)
+  const requiredBandsShortNames = req.query.bands ? req.query.bands.split(',') : provider.bands
 
+  const bands = provider.getRequiredBandsByShortNames(requiredBandsShortNames, sceneId)
   const getDataCalls = []
-  for (var i = 0; i < urls.length; i++) {
-    getDataCalls.push(getSceneOverview(urls[i], imgBbox, provider))
+
+  for (var i = 0; i < bands.length; i++) {
+    getDataCalls.push(getSceneOverview(bands[i], imgBbox, provider))
   }
+
   const bandSummaries = await Promise.all(getDataCalls)
-  const out = []
+
+  const out = {
+    bbox: imgBbox,
+    wgsBbox: provider.getWgsBBox(),
+    bandInformation: []
+  }
 
   for (var i = 0; i < bandSummaries.length; i++) {
-    out.push({
+    out.bandInformation.push({
       bandName: requiredBandsShortNames[i].shortName,
       stats: getBasicStats(bandSummaries[i].data)
     })
   }
-  res.send(out)
+  res.json(out)
 }
 
 function getBasicStats (arr) {

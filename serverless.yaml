@@ -28,9 +28,11 @@ functions:
     timeout: 20
     events:
       - http:
-          path: /{proxy+}
+          path: /{any+}
           method: get
           cors: true
+    environment:
+      NODE_ENV: production
 
 package:
   exclude:
