@@ -21,6 +21,11 @@ custom:
 plugins:
   - serverless-apigw-binary
 
+package:
+  individually: true
+  exclude:
+    - ./**
+
 functions:
   app:
     handler: server.handler
@@ -33,9 +38,6 @@ functions:
           cors: true
     environment:
       NODE_ENV: production
-
-package:
-  exclude:
-    - ".*/**"
-  include:
-    - server.js
+    package:
+      include:
+        - server.js

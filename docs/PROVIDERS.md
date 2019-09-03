@@ -7,4 +7,4 @@ A provider is a basic object that provides a few details about the datasource su
 
 ### Adding a new provider
 - To create a new provider copy and paste the `providers/LandsatPDSProvider.js` file and modify it accordingly. 
-- You'll then also need to add it to the `providerList` in `provideres/index.js`
+- You'll then also need to add it to the `providerList` in `providers/index.js`

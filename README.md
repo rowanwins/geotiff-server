@@ -46,7 +46,7 @@ http://localhost:5000/tiles/{x}/{y}/{z}.jpeg?
 ````
 http://localhost:5000/tiles/calculate/1829/1100/11.jpg?
    sceneId=LC80990692014143LGN00
-   &ratio=(b3-b5)/(b3+b5)  <---- although ensure it's urlEncoded
+   &ratio=(b3-b5)/(b3+b5)  <---- although ensure the ratio is urlEncoded
    &style=NDWI
 ````
 

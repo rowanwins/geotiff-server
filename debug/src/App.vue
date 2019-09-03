@@ -47,18 +47,15 @@ export default {
   methods: {
     imageryIdSet: async function () {
 
-      const metadata = await axios({
-        url: `${this.baseUrl}metadata?sceneId=${this.value}&provider=${this.provider}&bands=b4,b3,b2`,
-        method: 'get',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
-      map.fitBounds([[metadata.data.wgsBbox[0], metadata.data.wgsBbox[1]], metadata.data.wgsBbox[2], metadata.data.wgsBbox[3]])
+      const metadata = await axios(`${this.baseUrl}metadata?sceneId=${this.value}&provider=${this.provider}&bands=b4,b3,b2`)
+
+      map.fitBounds([
+        [metadata.data.wgsBbox[1], metadata.data.wgsBbox[0]],
+        [metadata.data.wgsBbox[3], metadata.data.wgsBbox[2]]
+      ])
 
       lamdbaLayer.options.sceneId = this.value
-      const minVals = metadata.data.bandInformation.map(b => b.stats.percentiles[0])
-      lamdbaLayer.options.pMin = Math.min(...minVals)
+      lamdbaLayer.options.pMin = Math.min(...metadata.data.bandInformation.map(b => b.stats.percentiles[0]))
       lamdbaLayer.options.pMax = Math.max(...metadata.data.bandInformation.map(b => b.stats.percentiles[1]))
 
       lamdbaLayer.redraw()

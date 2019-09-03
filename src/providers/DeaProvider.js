@@ -150,7 +150,7 @@ export class DeaProvider {
 
   getWgsBBox () {
     const coords = this.metadata.extent.coord
-    return [coords.ll.lat, coords.ll.lon, coords.ur.lat, coords.ur.lon]
+    return [coords.ll.lon, coords.ll.lat, coords.ur.lon, coords.ur.lat]
   }
 
   reprojectBbbox (requestBbox, nativeSR) {
