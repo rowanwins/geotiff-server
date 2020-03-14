@@ -21,7 +21,7 @@ A node.js server that generate tiles from cloud-optimised geotiff's designed for
 
 #### Example
 ````
-http://localhost:5000/tiles/1829/1100/11.jpg?
+http://localhost:5000/tiles/1829/1100/11.jpeg?
     sceneId=LC80990692014143LGN00
 
 
@@ -44,7 +44,7 @@ http://localhost:5000/tiles/{x}/{y}/{z}.jpeg?
 
 #### Example
 ````
-http://localhost:5000/tiles/calculate/1829/1100/11.jpg?
+http://localhost:5000/tiles/calculate/1829/1100/11.jpeg?
    sceneId=LC80990692014143LGN00
    &ratio=(b3-b5)/(b3+b5)  <---- although ensure the ratio is urlEncoded
    &style=NDWI
