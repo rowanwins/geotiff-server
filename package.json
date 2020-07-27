@@ -27,7 +27,7 @@
     "fast-png": "^4.0.1",
     "filepath": "^1.1.0",
     "geotiff": "1.0.0-beta.5",
-    "jpeg-js": "^0.3.4",
+    "jpeg-js": "^0.4.1",
     "js-yaml": "^3.12.0",
     "node-fetch": "^2.1.2",
     "serverless-http": "^1.6.0",
